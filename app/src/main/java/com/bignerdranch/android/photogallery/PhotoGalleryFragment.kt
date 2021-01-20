@@ -16,7 +16,7 @@ private const val TAG = "PhotoGalleryFragment"
 
 class PhotoGalleryFragment: Fragment() {
 
-    private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
+    private lateinit var photoGalleryViewModel: PhotoGalleryViewModel
     private lateinit var photoRecyclerView: RecyclerView
 
     override fun onCreateView(
@@ -25,6 +25,8 @@ class PhotoGalleryFragment: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_photo_gallery, container, false)
+
+        photoGalleryViewModel = PhotoGalleryViewModel(requireActivity())
 
         photoRecyclerView = view.findViewById(R.id.photo_recycler_view)
         photoRecyclerView.layoutManager = GridLayoutManager(context, 3)
@@ -81,8 +83,23 @@ class PhotoGalleryFragment: Fragment() {
                     return false
                 }
             })
+
+            setOnSearchClickListener {
+                searchView.setQuery(photoGalleryViewModel.searchTerm, false)
+            }
         }
     }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_item_clear -> {
+                photoGalleryViewModel.fetchPhotos("")
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
 
     companion object {
         fun newInstance() = PhotoGalleryFragment()
