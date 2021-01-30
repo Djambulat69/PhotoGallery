@@ -10,13 +10,19 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.bumptech.glide.Glide
 
 private const val TAG = "PhotoGalleryFragment"
 
 class PhotoGalleryFragment: Fragment() {
 
-    private lateinit var photoGalleryViewModel: PhotoGalleryViewModel
+    private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels {
+        PhotoGalleryViewModel.Factory(requireContext())
+    }
     private lateinit var photoRecyclerView: RecyclerView
 
     override fun onCreateView(
@@ -26,12 +32,19 @@ class PhotoGalleryFragment: Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_photo_gallery, container, false)
 
-        photoGalleryViewModel = PhotoGalleryViewModel(requireActivity())
-
         photoRecyclerView = view.findViewById(R.id.photo_recycler_view)
         photoRecyclerView.layoutManager = GridLayoutManager(context, 3)
 
         setHasOptionsMenu(true)
+
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .build()
+        val workRequest = OneTimeWorkRequestBuilder<PollWorker>()
+            .setConstraints(constraints)
+            .build()
+        WorkManager.getInstance(requireContext())
+            .enqueue(workRequest)
 
         return view
     }
